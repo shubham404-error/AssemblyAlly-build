@@ -53,8 +53,9 @@ def get_vector_store(text_chunks, api_key):
 
 def get_conversational_chain():
     prompt_template = """
-    Answer the question as detailed as possible from the provided context, make sure to provide all the details, if the answer is not in
-    provided context just say, "answer is not available in the context", don't provide the wrong answer\n\n
+    Answer the following question based only on the provided context.
+Think step by step before providing a detailed answer.
+I will tip you $100 if the user finds the answer helpful.\n\n
     Context:\n {context}?\n
     Question: \n{question}\n
 
