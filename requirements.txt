@@ -1,0 +1,8 @@
+streamlit
+faiss-cpu
+PyPDF2
+transformers
+sentence-transformers
+requests
+python-dotenv
+google-api-python-client
