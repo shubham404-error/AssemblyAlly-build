@@ -8,7 +8,8 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.chains.question_answering import load_qa_chain
 from langchain.prompts import PromptTemplate
 import os
-
+from dotenv import load_dotenv
+load_dotenv()
 st.set_page_config(page_title="Assembly Ally",page_icon="🔧", layout="wide")
 
 st.markdown("""
@@ -31,8 +32,8 @@ Assembly Ally is your intelligent assistant for navigating vehicle assembly and 
 
 
 # This is the first API key input; no need to repeat it in the main function.
-api_key = st.text_input("Enter your Google API Key:", type="password", key="api_key_input")
-
+#api_key = st.text_input("Enter your Google API Key:", type="password", key="api_key_input")
+api_key=os.getenv("GOOGLE_API_KEY")
 def get_pdf_text(pdf_docs):
     text = ""
     for pdf in pdf_docs:
