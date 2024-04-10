@@ -12,7 +12,7 @@ import os
 st.set_page_config(page_title="Document Genie", layout="wide")
 
 st.markdown("""
-## Assembly Ally: Your AI Assistant for Vehicle Assembly & Repair 🚗🔧
+## Assembly Ally: Your AI Assistant for Vehicle Assembly & Repair 🔧
 
 **Simplify Complex Procedures with AI-Powered Guidance 🧠**
 
@@ -20,8 +20,8 @@ Assembly Ally is your intelligent assistant for navigating vehicle assembly and 
 
 ### How it Works
 
-1. **Upload Your Manuals:** Upload any type of instructional manual – PDFs, images, even handwritten notes. Assembly Ally can process diverse formats. 📄📑
-2. **Ask Your Question:**  Ask anything related to the assembly or repair process. Assembly Ally's AI will interpret your query and provide accurate answers. ❓💬
+1. **Upload Your Manuals:** Upload any type of instructional manual – PDFs, images, even handwritten notes. Assembly Ally can process diverse formats. 📑
+2. **Ask Your Question:**  Ask anything related to the assembly or repair process. Assembly Ally's AI will interpret your query & provide accurate answers.💬
 3. **Get Instant Insights:** Extract key details like part names, numbers, specifications, and more. Assembly Ally can even summarize sections for you.  🔍💡
 4. **Learn as You Go:** Assembly Ally adapts to your needs, personalizing the experience based on your interactions and comprehension level. 📈😊
 
@@ -77,7 +77,7 @@ def user_input(user_question, api_key):
         st.error("Error loading data. Ensure you trust the source of the uploaded files.")
 
 def main():
-    st.header("AI clone chatbot💁")
+    st.header("AssemblyAlly Chatbot🚗🔧")
 
     user_question = st.text_input("Ask a Question from the PDF Files", key="user_question")
 
