@@ -9,7 +9,7 @@ from langchain.chains.question_answering import load_qa_chain
 from langchain.prompts import PromptTemplate
 import os
 
-st.set_page_config(page_title="Document Genie", layout="centered")
+st.set_page_config(page_title="Document Genie", layout="wide")
 
 st.markdown("""
 ## Assembly Ally: Your AI Assistant for Vehicle Assembly & Repair 🔧
