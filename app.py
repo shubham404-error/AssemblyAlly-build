@@ -5,8 +5,8 @@ import faiss
 import requests
 from dotenv import load_dotenv
 import os
+import google.generativeai as gen_ai
 import google.ai.generativelanguage as glm
-
 # Load environment variables from .env file
 load_dotenv()
 
