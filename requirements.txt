@@ -1,8 +1,8 @@
 streamlit
-faiss-cpu
-PyPDF2
-transformers
-sentence-transformers
-requests
+google-generativeai
 python-dotenv
-google-generativeai==0.3.2
+langchain
+PyPDF2
+chromadb
+faiss-cpu
+langchain_google_genai
