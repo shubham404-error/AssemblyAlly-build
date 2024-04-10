@@ -14,14 +14,13 @@ load_dotenv()
 API_KEY = os.getenv("GEMINI_API_KEY")
 
 # Function to extract text from PDF
-def extract_text_from_pdf(file_path):
-    with open(file_path, 'rb') as f:
-        pdf_reader = PyPDF2.PdfReader(f)
-        text = ""
-        for page_num in range(len(pdf_reader.pages)):
-            page = pdf_reader.pages[page_num]
-            text += page.extract_text()
-        return text
+def extract_text_from_pdf(uploaded_file):
+    pdf_reader = PyPDF2.PdfReader(uploaded_file.read())
+    text = ""
+    for page_num in range(len(pdf_reader.pages)):
+        page = pdf_reader.pages[page_num]
+        text += page.extract_text()
+    return text
 
 # Function to embed text
 def embed_text(text):
