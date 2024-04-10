@@ -1,76 +1,106 @@
 import streamlit as st
-import PyPDF2
-from sentence_transformers import SentenceTransformer
-import faiss
-import requests
-from dotenv import load_dotenv
+from PyPDF2 import PdfReader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 import os
-import google.generativeai as gen_ai
-import google.ai.generativelanguage as glm
-# Load environment variables from .env file
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
+import google.generativeai as genai
+from langchain.vectorstores import FAISS
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain.chains.question_answering import load_qa_chain
+from langchain.prompts import PromptTemplate
+from dotenv import load_dotenv
+
 load_dotenv()
+os.getenv("GOOGLE_API_KEY")
+genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
-# Access API keys from environment variables
-API_KEY = os.getenv("GEMINI_API_KEY")
 
-# Function to extract text from PDF
-def extract_text_from_pdf(uploaded_file):
-    pdf_reader = PyPDF2.PdfReader(uploaded_file.read())
-    text = ""
-    for page_num in range(len(pdf_reader.pages)):
-        page = pdf_reader.pages[page_num]
-        text += page.extract_text()
-    return text
 
-# Function to embed text
-def embed_text(text):
-    model = SentenceTransformer('all-MiniLM-L6-v2')
-    sentences = sent_tokenize(text)
-    embeddings = model.encode(sentences)
-    return embeddings
 
-# Function to search for similar sentences in FAISS index
-def search_similar_sentences(query_embedding, index, top_k=5):
-    distances, indices = index.search(query_embedding, top_k)
-    return indices[0]
 
-# Streamlit App
-st.title("Assembly Ally: Your Mechanic Assistant")
 
-uploaded_file = st.file_uploader("Upload a PDF Manual")
+def get_pdf_text(pdf_docs):
+    text=""
+    for pdf in pdf_docs:
+        pdf_reader= PdfReader(pdf)
+        for page in pdf_reader.pages:
+            text+= page.extract_text()
+    return  text
 
-if uploaded_file is not None:
-    # Process PDF and create FAISS index
-    text = extract_text_from_pdf(uploaded_file)
-    embeddings = embed_text(text)
-    index = faiss.IndexFlatL2(embeddings.shape[1])
-    index.add(embeddings)
 
-    # Initialize chat session
-    model = glm.GenerativeModel(API_KEY)
-    chat = model.start_chat(history=[])
 
-    # Get user query
-    query = st.text_input("Ask a question about the manual:")
+def get_text_chunks(text):
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=1000)
+    chunks = text_splitter.split_text(text)
+    return chunks
 
-    if query:
-        # Add user query to chat history
-        chat.send_message(query)
 
-        # Embed query and search for similar sentences
-        query_embedding = embed_text([query])[0]
-        similar_sentence_indices = search_similar_sentences(query_embedding, index)
+def get_vector_store(text_chunks):
+    embeddings = GoogleGenerativeAIEmbeddings(model = "models/embedding-001")
+    vector_store = FAISS.from_texts(text_chunks, embedding=embeddings)
+    vector_store.save_local("faiss_index")
 
-        # Retrieve context
-        context = " ".join([text.split(".")[idx] for idx in similar_sentence_indices])
 
-        # Generate response with context and safety settings
-        response = chat.send_message(
-            context, safety_settings={"HARASSMENT": "block_none"}
-        )
+def get_conversational_chain():
 
-        # Display results
-        st.write("Relevant Context:")
-        st.write(context)
-        st.write("AI Response:")
-        st.write(response.text)
+    prompt_template = """
+    Answer the question as detailed as possible from the provided context, make sure to provide all the details, if the answer is not in
+    provided context just say, "answer is not available in the context", don't provide the wrong answer\n\n
+    Context:\n {context}?\n
+    Question: \n{question}\n
+
+    Answer:
+    """
+
+    model = ChatGoogleGenerativeAI(model="gemini-pro",
+                             temperature=0.3)
+
+    prompt = PromptTemplate(template = prompt_template, input_variables = ["context", "question"])
+    chain = load_qa_chain(model, chain_type="stuff", prompt=prompt)
+
+    return chain
+
+
+
+def user_input(user_question):
+    embeddings = GoogleGenerativeAIEmbeddings(model = "models/embedding-001")
+    
+    new_db = FAISS.load_local("faiss_index", embeddings)
+    docs = new_db.similarity_search(user_question)
+
+    chain = get_conversational_chain()
+
+    
+    response = chain(
+        {"input_documents":docs, "question": user_question}
+        , return_only_outputs=True)
+
+    print(response)
+    st.write("Reply: ", response["output_text"])
+
+
+
+
+def main():
+    st.set_page_config("Chat PDF")
+    st.header("Chat with PDF using Gemini💁")
+
+    user_question = st.text_input("Ask a Question from the PDF Files")
+
+    if user_question:
+        user_input(user_question)
+
+    with st.sidebar:
+        st.title("Menu:")
+        pdf_docs = st.file_uploader("Upload your PDF Files and Click on the Submit & Process Button", accept_multiple_files=True)
+        if st.button("Submit & Process"):
+            with st.spinner("Processing..."):
+                raw_text = get_pdf_text(pdf_docs)
+                text_chunks = get_text_chunks(raw_text)
+                get_vector_store(text_chunks)
+                st.success("Done")
+
+
+
+if __name__ == "__main__":
+    main()
